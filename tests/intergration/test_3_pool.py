@@ -1,5 +1,6 @@
 import pytest
 from conftest import load_contract
+from test_helpers.utils import *
 
 
 @pytest.mark.parametrize("i", range(10))

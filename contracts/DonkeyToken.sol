@@ -5,6 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract DonkeyToken is ERC20 {
     constructor() public ERC20("Donkey Token", "DONK") {
-        _mint(msg.sender, 1000000000000000000000000);
+        _mint(msg.sender, 1e21);
     }
 }

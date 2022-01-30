@@ -14,7 +14,7 @@ def load_contract(addr):
 
 # Load Globals
 whale = accounts[0]
-registry = load_contract("0x90E00ACe148ca3b23Ac1bC8C240C2a7Dd9c2d7f5")
+registry = load_contract("0x7D86446dDb609eD0F5f8684AcF30380a356b2B4c")
 minter = load_contract("0xd061D61a4d941c39E5453435B6345Dc261C2fcE0")
 crv = load_contract(minter.token())
 
@@ -140,8 +140,3 @@ def calc_cur_value():
 
 def calc_balance():
     return crv.balanceOf(whale) / 10 ** crv.decimals()
-© 2022 GitHub, Inc.
-Terms
-Privacy
-Security
-Status

@@ -3,6 +3,8 @@ from web3 import Web3
 from scripts.helpful_scripts import get_account
 from brownie_tokens import MintableForkToken
 from brownie import MockERC20, Contract, network
+from test_helpers.utils import *
+
 
 @pytest.fixture(scope="function", autouse=True)
 def isolate(fn_isolation):
@@ -20,9 +22,15 @@ def random_erc20():
     erc20 = MockERC20.deploy({"from": account})
     return erc20
 
+# Deploy and Mint DonkeyToken
+@pytest.fixture(scope="module")
+def donkeyToken(Token, accounts):
+    return DonkeyToken.deploy("Donkey Token", "DONK", 18, 1e21,  accounts[0])
+
  # Referance Account A
 @pytest.fixture(scope="module")
-def alice(accounts):
+def alice():
+    account = get_account()
     return accounts[0]
     # Referance Account B
 @pytest.fixture(scope="module")
@@ -36,7 +44,6 @@ def load_contract(addr):
     except ValueError:
         cont = Contract.from_explorer(addr)
     return cont
-
 
 
 # Gets the curve registry contract
@@ -67,3 +74,7 @@ def tripool_funded(registry, alice, tripool):
     amounts = [amount, 0, 0]
     tripool.add_liquidity(amounts, 0, {"from": alice})
     return tripool
+
+@pytest.fixture(scope="module")
+def tripool_rewards(alice, tripool_funded):
+    return stake_into_rewards(tripool_funded, alice)
