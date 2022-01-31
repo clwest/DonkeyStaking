@@ -1,5 +1,5 @@
 from brownie import DonkeyToken, DonkeyStaking, network, config
-from scripts.helpful_scripts import get_account, get_contract, KEPT_BALANCE
+from scripts.helpers.helpful_scripts import get_account, get_contract, KEPT_BALANCE
 from web3 import Web3
 
 

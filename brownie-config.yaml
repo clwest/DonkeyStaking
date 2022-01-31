@@ -8,15 +8,18 @@ compiler:
       - "@chainlink=smartcontractkit/chainlink-brownie-contracts@0.2.1"
 dotenv: .env
 networks:
+  default: hardhat-fork
+  # hardhat-fork:
+  #   gas_price: 990000000000
   development:
     verify: false
   ganache:
     verify: false
-  hardhat: {
-    forking: {
-      url: "https://eth-mainnet.alchemyapi.io/v2/YPGqLO87fMfDFbtNwL38lsu7zyXetI_t"
-    }
-  }
+  # hardhat-fork: {
+  #   forking: {
+  #     url: "https://eth-mainnet.alchemyapi.io/v2/YPGqLO87fMfDFbtNwL38lsu7zyXetI_t"
+  #   }
+  # }
  
   kovan:
     verify: true
