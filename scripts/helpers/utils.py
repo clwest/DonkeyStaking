@@ -121,3 +121,8 @@ def redeposit_eth_pool(user, old_pool, new_pool):
 
     new_rewards = deposit_to_eth_pool(new_pool, user, redeposit_amount)
     return new_rewards, redeposit_amount
+
+def pool_name_from_lp(lp):
+    r = load_registry()
+    pool_addr = r.get_pool_from_lp_token(pool_addr)
+    return r.get_pool_name(pool_addr)

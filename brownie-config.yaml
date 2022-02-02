@@ -9,18 +9,10 @@ compiler:
 dotenv: .env
 networks:
   default: hardhat-fork
-  # hardhat-fork:
-  #   gas_price: 990000000000
-  development:
-    verify: false
-  ganache:
-    verify: false
-  # hardhat-fork: {
-  #   forking: {
-  #     url: "https://eth-mainnet.alchemyapi.io/v2/YPGqLO87fMfDFbtNwL38lsu7zyXetI_t"
-  #   }
-  # }
- 
+    #blockNumber: 11095000
+  
+  # dev_deployment_artifact: true
+
   kovan:
     verify: true
     weth_token: "0xd0a1e359811322d97991e03f863a0c30c2cf029c"

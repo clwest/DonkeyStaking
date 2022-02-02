@@ -1,3 +1,5 @@
+# THis currently doesn't work need new gas api
+
 from brownie import *
 from brownie.network import gas_price
 from brownie.network.gas.strategies import GasNowStrategy
