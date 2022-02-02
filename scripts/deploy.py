@@ -12,7 +12,7 @@ def deploy_donkey_staking_and_donkey_token():
     donkey_staking = DonkeyStaking.deploy(
         donkey_token.address, 
         {"from": account}, 
-        publish_source = config["networks"][network.show_active()].get("verify", False),
+        publish_source = config["networks"][network.show_active()].get("verify", True),
         )
     tx = donkey_token.transfer(donkey_staking.address, donkey_token.totalSupply() - KEPT_BALANCE, {"from": account})
     tx.wait(1)
