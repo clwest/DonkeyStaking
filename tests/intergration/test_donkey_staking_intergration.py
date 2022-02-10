@@ -1,5 +1,5 @@
 from brownie import network
-from scripts.helpful_scripts import (
+from scripts.helpers.helpful_scripts import (
     LOCAL_BLOCKCHAIN_ENVIRONMENTS,
     get_account,
     get_contract,

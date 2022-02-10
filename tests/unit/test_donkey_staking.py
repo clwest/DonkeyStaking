@@ -1,5 +1,5 @@
 from brownie import network, exceptions
-from scripts.helpful_scripts import (
+from scripts.helpers.helpful_scripts import (
     LOCAL_BLOCKCHAIN_ENVIRONMENTS, 
     get_account, 
     get_contract, 
@@ -7,7 +7,7 @@ from scripts.helpful_scripts import (
     DECIMALS, 
     KEPT_BALANCE,
 )
-from scripts.deploy import deploy_donkey_staking_and_donkey_token
+from scripts.deploy import deploy_donkey_staking_and_donkey_token, KEPT_BALANCE
 import pytest
 
 

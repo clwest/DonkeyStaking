@@ -1,7 +1,7 @@
 from brownie import *
 
-from scripts.compare_crv_to_cvx import compare_crv_to_cvx
-from scripts.curve.helpers.utils import *
+from scripts.curve.compare_crv_to_cvx import compare_crv_to_cvx
+from scripts.helpers.utils import *
 
 
 # Loop through all pools and compare Curve vs Convex rewards

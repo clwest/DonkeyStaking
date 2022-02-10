@@ -5,10 +5,14 @@ def main():
 
     address_provider = "0x0000000022d53366457f9d5e68ec105046fc4383"
     ap = set_alias(address_provider, "address_provider")
+    minter_address = "0xd061D61a4d941c39E5453435B6345Dc261C2fcE0"
+    minter = set_alias(minter_address, "minter_address")
+    
 
 
     # Set up Provider contracts with aliases
-
+    
+    # minter = set_alias(m.token(), "minter")
     registry = set_alias(ap.get_registry(), "registry")
     pool_info = set_alias(ap.get_address(1), "pool_info")
     exchange = set_alias(ap.get_address(2), "registry_exchange")
@@ -46,7 +50,7 @@ def main():
 
     # Convex pools 
 
-    cvx = set_alias("0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B", "cvx")
+    cvx = set_alias("0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b", "cvx")
     cvx = set_alias("0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7", "cvxcrv")
     booster = set_alias("0xF403C135812408BFbE8713b5A23a04b3D48AAE31", "cvx_booster")
     staker = set_alias("0xCF50b810E57Ac33B91dCF525C6ddd9881B139332", "cvx_staker")
