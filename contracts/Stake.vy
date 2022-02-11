@@ -3,7 +3,7 @@
 from vyper.interfaces import ERC20
 
 interface Curve2Pool:
-    def add_liquidity(amounts: uint256[2], min_mint_amount: uint256): nonpayable
+    def add_liquidity(amounts: uint256[2], min_mint_amount: uint256): payable
     def remove_liquidity(_amount: uint256, min_amounts: uint256[2]): nonpayable
 
 interface Curve3Pool:
@@ -106,15 +106,18 @@ def _add_liquidity(
     @parma coin_addr Address of ERC20 Token
     @param pool_addr Address of Curve Pool
     """
-
-    coin_bal: uint256 = ERC20(coin_addr).balanceOf(self)
+    coin_bal: uint256 = 0
+    if coin_addr == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:
+        coin_bal = self.balance
+    else:
+        coin_bal = ERC20(coin_addr).balanceOf(self)
     assert coin_bal > 0, "Coin balance must be greater than 0"
 
     # Some factorys may have empty pools
     if use_factory:
         assert ERC20(pool_addr).totalSupply() > 0, "Pool must have a total supply greater than 0"
-
-    ERC20(coin_addr).approve(pool_addr, coin_bal)
+    if coin_addr != 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:
+        ERC20(coin_addr).approve(pool_addr, coin_bal)
     coin_index: int256[2] = self._get_coin_index(coin_addr, pool_addr, use_underlying, use_factory)
     assert coin_index[0] >= 0, "Coins not found"
 
@@ -124,7 +127,10 @@ def _add_liquidity(
         if use_underlying:
             Curve2PoolUnderlying(pool_addr).add_liquidity(liq_arr, 0, True)
         else:
-            Curve2Pool(pool_addr).add_liquidity(liq_arr, 0)
+            if coin_addr == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE:
+                Curve2Pool(pool_addr).add_liquidity(liq_arr, 0, value=self.balance)
+            else:
+                Curve2Pool(pool_addr).add_liquidity(liq_arr, 0)
 
     elif coin_index[1] == 3:
         liq_arr: uint256[3] = [0, 0, 0]
@@ -160,7 +166,7 @@ def __init__(address_provider: address):
     self.factory = Factory(self.address_provider.get_address(3))
     self.owner = msg.sender
 
-
+@payable
 @external
 def donk(coin_addr: address, pool_addr: address):
         """

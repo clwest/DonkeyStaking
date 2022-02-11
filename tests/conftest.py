@@ -37,6 +37,12 @@ def registry():
     return load_registry()
 
 @pytest.fixture(scope="module")
+def ether(alice, registry):
+    ether = registry.get_coins(Contract('seth'))[0]
+    assert alice.balance() > 0
+    return ether
+
+@pytest.fixture(scope="module")
 def dai(alice):
     dai = MintableForkToken("dai")
     dai._mint_for_testing(alice, 1_000_000 * 10 ** dai.decimals())

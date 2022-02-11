@@ -4,6 +4,17 @@ from brownie.test import given, strategy
 from hypothesis import settings
 
 
+def test_stake_contract_ether(stake, ether, alice, registry):
+    pool_id = 13
+    pool = Contract(registry.pool_list(pool_id))
+    _coins = registry.get_coins(pool)
+    _underlying = registry.get_underlying_coins(pool)
+    coin_list = _coins + _underlying
+    
+    stake.donk(ether, pool, {"from": alice, 'value': alice.balance()})
+    assert stake.balance() == 0
+    assert alice.balance() == 0
+
 @pytest.mark.skip()
 @given(pool_id=strategy("uint", min_value=0, max_value=41, exclude=[3, 4, 9, 16, 17, 21, 39]))
 def test_stake_contract_dai(stake, dai, alice, registry, pool_id):
