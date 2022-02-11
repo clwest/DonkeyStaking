@@ -2,7 +2,11 @@ from brownie import *
 
 def main():
     # Pull Address Provider to retrieve Dynamically
-
+    address_provider = "0x0000000022D53366457F9d5E68Ec105046FC4383"
+    ap = set_alias(address_provider, "address_provider")
+    
+    weth_address = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+    weth = set_alias(weth_address, "weth_address")
 
     minter_address = "0xd061D61a4d941c39E5453435B6345Dc261C2fcE0"
     minter = set_alias(minter_address, "minter_address")
@@ -17,6 +21,7 @@ def main():
     exchange = set_alias(ap.get_address(2), "registry_exchange")
     factory = set_alias(ap.get_address(3), "factory")
     distributor = set_alias(ap.get_address(4), "distributor")
+    crypto_registry = set_alias(ap.get_address(5), "crypto_registry")
 
     controller = set_alias(registry.gauge_controller(), "gauge_controller")
 
