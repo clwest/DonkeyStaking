@@ -3,8 +3,7 @@ from brownie import *
 def main():
     # Pull Address Provider to retrieve Dynamically
 
-    address_provider = "0x0000000022d53366457f9d5e68ec105046fc4383"
-    ap = set_alias(address_provider, "address_provider")
+
     minter_address = "0xd061D61a4d941c39E5453435B6345Dc261C2fcE0"
     minter = set_alias(minter_address, "minter_address")
     

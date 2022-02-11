@@ -40,32 +40,51 @@ interface Registry:
     def get_pool_from_lp_token(arg0: address) -> address: view
     def get_lp_token(arg0: address) -> address: view
 
+interface Factory:
+    def get_n_coins(_pool: address) -> uint256[2]: view
+    def get_coins(_pool: address) -> address[4]: view
+    def get_underlying_coins(_pool: address) -> address[8]: view
+    def get_gauge(_pool: address) -> address: view
+    def is_meta(_pool: address) -> bool: view
+    def get_base_pool(_pool: address) -> address: view
+    def get_pool_from_lp_token(arg0: address) -> address: view
+    def get_lp_token(arg0: address) -> address: view
+
 interface AddressProvider:
+    def get_address(arg0: uint256) -> address: nonpayable
     def get_registry() -> address: nonpayable
 
 
 address_provider: public(AddressProvider)
 registry: public(Registry)
+factory: public(Factory)
 owner: public(address)
 
 # Internal Functions 
 
 @internal 
-def _load_coins(pool_addr: address, use_underlying: bool) -> address[8]:
-    if use_underlying == True:
-        return self.registry.get_underlying_coins(pool_addr)
+def _load_coins(pool_addr: address, use_underlying: bool, use_factory: bool) -> address[8]:
+    if use_factory:
+        if use_underlying == True:
+            return self.factory.get_underlying_coins(pool_addr)
+        else:
+            val: address[4] = self.factory.get_coins(pool_addr)
+            return [val[0], val[1], val[2], val[3], ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
     else:
-        return self.registry.get_coins(pool_addr)
+        if use_underlying == True:
+            return self.registry.get_underlying_coins(pool_addr)
+        else:
+            return self.registry.get_coins(pool_addr)
 
 @internal
-def _get_coin_index(coin_addr: address, pool_addr: address, use_underlying: bool) -> int256[2]:
+def _get_coin_index(coin_addr: address, pool_addr: address, use_underlying: bool, use_factory: bool) -> int256[2]:
     """
     @notice Determine the index of a coin in a pool
     @param coin_addr Address of the ERC20 token
     @param pool_addr Address of the Curve pool
     """
 
-    coins: address[8] = self._load_coins(pool_addr, use_underlying)
+    coins: address[8] = self._load_coins(pool_addr, use_underlying, use_factory)
     ret_index: int256 = -1
     ret_number: int256 = -1
 
@@ -80,7 +99,8 @@ def _get_coin_index(coin_addr: address, pool_addr: address, use_underlying: bool
 def _add_liquidity(
         coin_addr: address, 
         pool_addr: address, 
-        use_underlying: bool):
+        use_underlying: bool,
+        use_factory: bool):
     """
     @ notice Approve and Deposit ERC20 into a Curve pool
     @parma coin_addr Address of ERC20 Token
@@ -90,8 +110,12 @@ def _add_liquidity(
     coin_bal: uint256 = ERC20(coin_addr).balanceOf(self)
     assert coin_bal > 0, "Coin balance must be greater than 0"
 
+    # Some factorys may have empty pools
+    if use_factory:
+        assert ERC20(pool_addr).totalSupply() > 0, "Pool must have a total supply greater than 0"
+
     ERC20(coin_addr).approve(pool_addr, coin_bal)
-    coin_index: int256[2] = self._get_coin_index(coin_addr, pool_addr, use_underlying)
+    coin_index: int256[2] = self._get_coin_index(coin_addr, pool_addr, use_underlying, use_factory)
     assert coin_index[0] >= 0, "Coins not found"
 
     if coin_index[1] == 2:
@@ -133,6 +157,7 @@ def __init__(address_provider: address):
 
     self.address_provider = AddressProvider(address_provider)
     self.registry = Registry(self.address_provider.get_registry())
+    self.factory = Factory(self.address_provider.get_address(3))
     self.owner = msg.sender
 
 
@@ -143,26 +168,49 @@ def donk(coin_addr: address, pool_addr: address):
         @param coin_addr Address of ERC20 Token
         @param pool_addr Address of Curve Pool
         """
-        if coin_addr in self.registry.get_coins(pool_addr):
-            self._add_liquidity(coin_addr, pool_addr, False)
 
+        _is_factory: bool = False
+
+
+        if coin_addr in self.registry.get_coins(pool_addr):
+            self._add_liquidity(coin_addr, pool_addr, False, False)
         elif self.registry.is_meta(pool_addr):
             metapool_lp: address = self.registry.get_coins(pool_addr)[1]
             metapool: address = self.registry.get_pool_from_lp_token(metapool_lp)
-            self._add_liquidity(coin_addr, metapool, False)
-            self._add_liquidity(metapool_lp, pool_addr, False)
+            self._add_liquidity(coin_addr, metapool, False, False)
+            self._add_liquidity(metapool_lp, pool_addr, False, False)        
         elif coin_addr in self.registry.get_underlying_coins(pool_addr):
-            self._add_liquidity(coin_addr, pool_addr, True)
+            self._add_liquidity(coin_addr, pool_addr, True, False)
+        elif coin_addr in self.factory.get_coins(pool_addr):
+            self._add_liquidity(coin_addr, pool_addr, False, True)
+            _is_factory = True
+        elif self.factory.is_meta(pool_addr):
+            metapool: address = self.factory.get_base_pool(pool_addr)
+            metapool_lp: address = self.registry.get_lp_token(metapool)
+            self._add_liquidity(coin_addr, metapool, False, False)
+            self._add_liquidity(metapool_lp, pool_addr, False, True)
+            _is_factory = True
+            
+        elif coin_addr in self.factory.get_underlying_coins(pool_addr):
+            self._add_liquidity(coin_addr, pool_addr, True, True)
+            _is_factory = True
         else:
             assert False
 
-        lp_addr: address = self.registry.get_lp_token(pool_addr)
+        lp_addr: address = ZERO_ADDRESS
+        rewards_addr: address = ZERO_ADDRESS
+        if _is_factory == True:
+            lp_addr = pool_addr
+            rewards_addr = self.factory.get_gauge(pool_addr)
+        else:
+            lp_addr = self.registry.get_lp_token(pool_addr)
+            rewards_addr = self.registry.get_gauges(pool_addr)[0][0]
         lp_bal: uint256 = ERC20(lp_addr).balanceOf(self)
         assert lp_bal > 0, "Error with deposit"
 
-        rewards_addr: address = self.registry.get_gauges(pool_addr)[0][0]
-        ERC20(lp_addr).approve(rewards_addr, lp_bal)
-        Gauge(rewards_addr).deposit(lp_bal)
+        if rewards_addr != ZERO_ADDRESS:
+            ERC20(lp_addr).approve(rewards_addr, lp_bal)
+            Gauge(rewards_addr).deposit(lp_bal)
 
 @external
 def undonk_balanced(pool_addr: address):
@@ -207,4 +255,3 @@ def set_registry():
     @notice Set the Registry Address
     """
     self.registry = Registry(self.address_provider.get_registry())
-
