@@ -28,65 +28,8 @@ contract DonkeyStaking is ReentrancyGuard, Ownable {
         tokenPriceFeedMapping[_token] = _priceFeed;
     }
 
-    function issueTokens() public onlyOwner {
-        for (
-            uint256 stakersIndex = 0;
-            stakersIndex < stakers.length;
-            stakersIndex++
-        ) {
-            address recipient = stakers[stakersIndex];
-            uint256 userTotalValue = getUserTotalValue(recipient);
-            donkeyToken.transfer(recipient, userTotalValue);
-            // send them a token reward
-            // based on their total value locked
-        }
-    }
-
-    function getUserTotalValue(address _user) public view returns (uint256) {
-        uint256 totalValue = 0;
-        require(uniqueTokensStaked[_user] > 0, "No Tokens Staked");
-        for (
-            uint256 allowedTokensIndex = 0;
-            allowedTokensIndex < allowedTokens.length;
-            allowedTokensIndex++
-        ) {
-            totalValue =
-                totalValue +
-                getUserSingleTokenValue(
-                    _user,
-                    allowedTokens[allowedTokensIndex]
-                );
-        }
-        return totalValue;
-    }
-
-    function getUserSingleTokenValue(address _user, address _token)
-        public
-        view
-        returns (uint256)
-    {
-        if (uniqueTokensStaked[_user] <= 0) {
-            return 0;
-        }
-        (uint256 price, uint256 decimals) = getTokenValue(_token);
-        return // 1 ETH = 1000000000000000000000000
-        // ETH/USD = 100000000
-        // 10 * 100 = 1000
-        ((stakingBalance[_token][_user] * price) / (10**decimals));
-    }
-
-    function getTokenValue(address _token)
-        public
-        view
-        returns (uint256, uint256)
-    {
-        address priceFeedAddress = tokenPriceFeedMapping[_token];
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(
-            priceFeedAddress
-        );
-        (, int256 price, , , ) = priceFeed.latestRoundData();
-        uint256 decimals = uint256(priceFeed.decimals());
-        return (uint256(price), decimals);
+    function addAllowedTokens(address _token) public onlyOwner {
+        allowedTokens.push(_token);
     }
 
     function stakeTokens(uint256 _amount, address _token) public {
@@ -114,14 +57,22 @@ contract DonkeyStaking is ReentrancyGuard, Ownable {
         isStaking[msg.sender] = false;
     }
 
-    function updateUniqueTokensStaked(address _user, address _token) internal {
-        if (stakingBalance[_token][_user] <= 0) {
-            uniqueTokensStaked[_user] = uniqueTokensStaked[_user] + 1;
+    function getUserTotalValue(address _user) public view returns (uint256) {
+        uint256 totalValue = 0;
+        require(uniqueTokensStaked[_user] > 0, "No Tokens Staked");
+        for (
+            uint256 allowedTokensIndex = 0;
+            allowedTokensIndex < allowedTokens.length;
+            allowedTokensIndex++
+        ) {
+            totalValue =
+                totalValue +
+                getUserSingleTokenValue(
+                    _user,
+                    allowedTokens[allowedTokensIndex]
+                );
         }
-    }
-
-    function addAllowedTokens(address _token) public onlyOwner {
-        allowedTokens.push(_token);
+        return totalValue;
     }
 
     function tokenIsAllowed(address _token) public returns (bool) {
@@ -136,4 +87,58 @@ contract DonkeyStaking is ReentrancyGuard, Ownable {
         }
         return false;
     }
+
+    function updateUniqueTokensStaked(address _user, address _token) internal {
+        if (stakingBalance[_token][_user] <= 0) {
+            uniqueTokensStaked[_user] = uniqueTokensStaked[_user] + 1;
+        }
+    }
+
+
+
+    function getUserSingleTokenValue(address _user, address _token)
+        public
+        view
+        returns (uint256)
+    {
+        if (uniqueTokensStaked[_user] <= 0) {
+            return 0;
+    }
+        (uint256 price, uint256 decimals) = getTokenValue(_token);
+        
+        return ((stakingBalance[_token][_user] * price) / (10**decimals));
+    }
+
+
+    function issueTokens() public onlyOwner {
+        for (
+            uint256 stakersIndex = 0;
+            stakersIndex < stakers.length;
+            stakersIndex++
+        ) {
+            address recipient = stakers[stakersIndex];
+            uint256 userTotalValue = getUserTotalValue(recipient);
+            donkeyToken.transfer(recipient, userTotalValue);
+            // send them a token reward
+            // based on their total value locked
+        }
+    }
+
+
+
+    function getTokenValue(address _token)
+        public
+        view
+        returns (uint256, uint256)
+    {
+        address priceFeedAddress = tokenPriceFeedMapping[_token];
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(
+            priceFeedAddress
+        );
+        (, int256 price, , , ) = priceFeed.latestRoundData();
+        uint256 decimals = uint256(priceFeed.decimals());
+        return (uint256(price), decimals);
+    }
+
+
 }

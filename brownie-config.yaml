@@ -14,7 +14,7 @@ networks:
   
   # dev_deployment_artifact: true
   hardhat-fork:
-    verify: true
+    verify: false
     
   kovan:
     verify: true

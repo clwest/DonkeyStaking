@@ -31,7 +31,7 @@ contract_to_mock = {
 DECIMALS = 18
 INITIAL_PRICE_FEED_VALUE = Web3.toWei(2, "ether")
 KEPT_BALANCE = Web3.toWei(100, "ether")
-FRONT_END_FOLDER = "../DonkeyStakingFrontend/src/"
+FRONT_END_FOLDER = "../donkey-betz/src/"
 
 
 def get_account(index=None, id=None):
